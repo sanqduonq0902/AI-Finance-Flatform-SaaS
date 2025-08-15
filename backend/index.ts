@@ -5,6 +5,7 @@ import cors from 'cors';
 import { HTTP_STATUS } from './config/http.config';
 import { errorHandler } from './middlewares/error-handler.middleware';
 import connectMongoDB from './config/database.config';
+import authRoutes from './routes/auth.router';
 
 const app = express();
 const BASE_PATH = Env.BASE_PATH;
@@ -25,6 +26,8 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
     });
 });
 
+
+app.use(`${BASE_PATH}/auth`, authRoutes)
 app.use(errorHandler);
 
 app.listen(Env.PORT, async () => {
