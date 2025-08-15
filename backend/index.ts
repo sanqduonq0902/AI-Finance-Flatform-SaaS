@@ -3,6 +3,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import { Env } from './config/env.config';
 import cors from 'cors';
 import { HTTP_STATUS } from './config/http.config';
+import { errorHandler } from './middlewares/error-handler.middleware';
 
 const app = express();
 const BASE_PATH = Env.BASE_PATH;
@@ -22,6 +23,8 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
         message: 'Server is running'
     });
 });
+
+app.use(errorHandler);
 
 app.listen(Env.PORT, () => {
     console.log(`App started at http://localhost:${Env.PORT}`);
