@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
-import { RegisterSchemaType } from "../validations/auth.validation";
+import { LoginSchemaType, RegisterSchemaType } from "../validations/auth.validation";
 import UserModel from "../models/user.model";
-import { UnauthorizedException } from "../utils/app-error";
+import { NotFoundException, UnauthorizedException } from "../utils/app-error";
 import ReportSettingModel from "../models/report-setting.model";
 import { ReportFrequencyEnum } from "../enums/report.enums";
 import { calculateNextReportDate } from "../utils/helper";
+import { signJwtToken } from "../utils/jwt";
 
 export const registerService = async (body: RegisterSchemaType) => {
     const {email} = body;
@@ -35,5 +36,31 @@ export const registerService = async (body: RegisterSchemaType) => {
         throw error
     } finally {
         await session.endSession();
+    }
+}
+
+export const loginService = async (body: LoginSchemaType) => {
+    const {email, password} = body;
+
+    const user = await UserModel.findOne({email});
+    if (!user) throw new NotFoundException('Email or password not found');
+
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) throw new UnauthorizedException('Invalid email or password');
+
+    const {token, expiresAt} = signJwtToken({userId: user.id})
+
+    const reportSetting = await ReportSettingModel.findOne(
+        {
+            userId: user.id
+        },
+        {_id: 1, frequency: 1, isEnabled: 1}
+    ).lean();
+
+    return {
+        user: user.omitPassword(),
+        accessToken: token,
+        expiresAt,
+        reportSetting
     }
 }

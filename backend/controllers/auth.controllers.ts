@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../middlewares/async-handler.middleware";
-import { registerSchema } from "../validations/auth.validation";
+import { loginSchema, registerSchema } from "../validations/auth.validation";
 import { HTTP_STATUS } from "../config/http.config";
-import { registerService } from "../services/auth.services";
+import { loginService, registerService } from "../services/auth.services";
 
 export const registerController = asyncHandler(
 	async (req: Request, res: Response) => {
@@ -15,3 +15,18 @@ export const registerController = asyncHandler(
 		});
 	}
 );
+
+export const loginController = asyncHandler(
+    async(req: Request, res: Response) => {
+        const body = loginSchema.parse(req.body);
+        const {user, accessToken, expiresAt, reportSetting} = await loginService(body);
+
+        return res.status(HTTP_STATUS.OK).json({
+            message: 'User logged in successfully',
+            user,
+            accessToken,
+            expiresAt,
+            reportSetting
+        })
+    }
+)
