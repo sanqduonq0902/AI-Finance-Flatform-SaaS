@@ -6,12 +6,19 @@ import { HTTP_STATUS } from './config/http.config';
 import { errorHandler } from './middlewares/error-handler.middleware';
 import connectMongoDB from './config/database.config';
 import authRoutes from './routes/auth.router';
+import userRoutes from './routes/user.router';
+import passport from 'passport';
+import './interface/user.interface';
+import './config/passport.config';
+import { passportAuthJwt } from './config/passport.config';
 
 const app = express();
 const BASE_PATH = Env.BASE_PATH;
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+app.use(passport.initialize());
 
 app.use(
     cors({
@@ -26,8 +33,8 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
     });
 });
 
-
-app.use(`${BASE_PATH}/auth`, authRoutes)
+app.use(`${BASE_PATH}/auth`, authRoutes);
+app.use(`${BASE_PATH}/user`,passportAuthJwt, userRoutes);
 app.use(errorHandler);
 
 app.listen(Env.PORT, async () => {
