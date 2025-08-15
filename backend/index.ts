@@ -4,6 +4,7 @@ import { Env } from './config/env.config';
 import cors from 'cors';
 import { HTTP_STATUS } from './config/http.config';
 import { errorHandler } from './middlewares/error-handler.middleware';
+import connectMongoDB from './config/database.config';
 
 const app = express();
 const BASE_PATH = Env.BASE_PATH;
@@ -26,7 +27,8 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
 
 app.use(errorHandler);
 
-app.listen(Env.PORT, () => {
+app.listen(Env.PORT, async () => {
+    await connectMongoDB(),
     console.log(`App started at http://localhost:${Env.PORT}`);
 });
 
