@@ -3,8 +3,6 @@ export interface IUser extends Document {
     email: string,
     password: string,
     profilePicture: string | null,
-    createdAt: Date,
-    updatedAt: Date,
 }
 
 export interface IUserMethod {
