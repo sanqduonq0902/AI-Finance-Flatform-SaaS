@@ -27,7 +27,7 @@ const userSchema = new Schema<IUser, Model<IUser>, IUserMethod>({
 }, {timestamps: true, collection: 'User'});
 
 userSchema.pre('save', async function (next) {
-    if (this.isModified(this.password)) {
+    if (this.isModified('password')) {
         this.password = await hashValue(this.password, 10);
     }
     next();
