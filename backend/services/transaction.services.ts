@@ -1,5 +1,6 @@
 import { TransactionTypeEnum } from "../enums/transaction.enums";
 import TransactionModel from "../models/transaction.model";
+import { NotFoundException } from "../utils/app-error";
 import { calculateNextOccurrence } from "../utils/helper";
 import { CreateTransactionType } from "../validations/transaction.validation";
 
@@ -96,3 +97,13 @@ export const getAllTransactionService = async (
 		},
 	};
 };
+
+export const getTransactionByIdService = async (userId: string, transactionId: string) => {
+    const transaction = await TransactionModel.findOne({
+        _id: transactionId,
+        userId
+    })
+    if (!transaction) throw new NotFoundException('Transaction not found');
+    
+    return transaction;
+}
