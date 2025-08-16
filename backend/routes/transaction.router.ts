@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
     bulkDeleteTransactionController,
+	bulkTransactionController,
 	createTransactionController,
 	deleteTransactionController,
 	getAllTransactionController,
@@ -11,10 +12,11 @@ import {
 const router = Router();
 
 router.post("/create", createTransactionController);
+router.post("/bulk-transaction", bulkTransactionController);
+router.delete("/bulk-delete", bulkDeleteTransactionController);
 router.get("/all", getAllTransactionController);
 router.get("/:id", getTransactionByIdController);
 router.put("/:id", updateTransactionController);
 router.delete("/:id", deleteTransactionController);
-router.delete("/", bulkDeleteTransactionController);
 
 export default router;

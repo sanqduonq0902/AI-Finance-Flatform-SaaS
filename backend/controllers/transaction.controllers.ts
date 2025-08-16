@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../middlewares/async-handler.middleware";
 import { HTTP_STATUS } from "../config/http.config";
-import { bulkDeleteTransactionSchema, createTransactionSchema, transactionIdSchema, updateTransactionSchema } from "../validations/transaction.validation";
-import { bulkDeleteTransactionService, createTransactionService, deleteTransactionService, getAllTransactionService, getTransactionByIdService, updateTransactionService } from "../services/transaction.services";
+import { bulkDeleteTransactionSchema, bulkTransactionSchema, createTransactionSchema, transactionIdSchema, updateTransactionSchema } from "../validations/transaction.validation";
+import { bulkDeleteTransactionService, bulkTransactionService, createTransactionService, deleteTransactionService, getAllTransactionService, getTransactionByIdService, updateTransactionService } from "../services/transaction.services";
 import { TransactionTypeEnum } from "../enums/transaction.enums";
 
 export const createTransactionController = asyncHandler(
@@ -91,6 +91,20 @@ export const bulkDeleteTransactionController = asyncHandler(
         const result = await bulkDeleteTransactionService(userId, transactionIds);
         return res.status(HTTP_STATUS.OK).json({
             message: 'Transaction deleted successfully',
+            result
+        })
+    }
+)
+
+export const bulkTransactionController = asyncHandler(
+    async (req: Request, res: Response) => {
+        const userId = req.user?._id;
+
+        const { transactions } = bulkTransactionSchema.parse(req.body);
+
+        const result = await bulkTransactionService(userId, transactions);
+        return res.status(HTTP_STATUS.OK).json({
+            message: 'Bulk transaction inserted successfully',
             result
         })
     }
