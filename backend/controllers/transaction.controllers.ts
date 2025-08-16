@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../middlewares/async-handler.middleware";
 import { HTTP_STATUS } from "../config/http.config";
-import { createTransactionSchema, transactionIdSchema, updateTransactionSchema } from "../validations/transaction.validation";
-import { createTransactionService, deleteTransactionService, getAllTransactionService, getTransactionByIdService, updateTransactionService } from "../services/transaction.services";
+import { bulkDeleteTransactionSchema, createTransactionSchema, transactionIdSchema, updateTransactionSchema } from "../validations/transaction.validation";
+import { bulkDeleteTransactionService, createTransactionService, deleteTransactionService, getAllTransactionService, getTransactionByIdService, updateTransactionService } from "../services/transaction.services";
 import { TransactionTypeEnum } from "../enums/transaction.enums";
 
 export const createTransactionController = asyncHandler(
@@ -79,6 +79,19 @@ export const deleteTransactionController = asyncHandler(
         await deleteTransactionService(userId, transactionId);
         return res.status(HTTP_STATUS.OK).json({
             message: 'Transaction deleted successfully'
+        })
+    }
+)
+
+export const bulkDeleteTransactionController = asyncHandler(
+    async (req: Request, res: Response) => {
+        const userId = req.user?._id;
+        const { transactionIds } = bulkDeleteTransactionSchema.parse(req.body);
+
+        const result = await bulkDeleteTransactionService(userId, transactionIds);
+        return res.status(HTTP_STATUS.OK).json({
+            message: 'Transaction deleted successfully',
+            result
         })
     }
 )
