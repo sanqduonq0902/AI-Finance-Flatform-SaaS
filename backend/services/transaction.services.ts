@@ -1,3 +1,4 @@
+import { success } from "zod";
 import { TransactionTypeEnum } from "../enums/transaction.enums";
 import TransactionModel from "../models/transaction.model";
 import { NotFoundException } from "../utils/app-error";
@@ -163,5 +164,35 @@ export const bulkDeleteTransactionService = async (userId: string, transactionId
     return {
         success: true,
         deletedCount: result.deletedCount
+    }
+}
+
+export const bulkTransactionService = async (userId: string, transactions: CreateTransactionType[]) => {
+    try {
+        const bulkOps = transactions.map((tx) => ({
+            insertOne: {
+                document: {
+                    ...tx,
+                    userId,
+                    isRecurring: false,
+                    nextRecurringDate: null,
+                    recurring: null,
+                    lastProcessed: null,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                }
+            }
+        }));
+
+        const result = await TransactionModel.bulkWrite(bulkOps, {
+            ordered: true
+        })
+
+        return {
+            insertedCount: result.insertedCount,
+            success: true
+        }
+    } catch (error) {
+        throw error
     }
 }
