@@ -1,9 +1,15 @@
 import { success } from "zod";
 import { TransactionTypeEnum } from "../enums/transaction.enums";
 import TransactionModel from "../models/transaction.model";
-import { NotFoundException } from "../utils/app-error";
+import { BadRequestException, NotFoundException } from "../utils/app-error";
 import { calculateNextOccurrence } from "../utils/helper";
 import { CreateTransactionType, UpdateTransactionType } from "../validations/transaction.validation";
+import axios from "axios";
+import { genAI, genAIModel } from "../config/google-ai.config";
+import { createPartFromBase64, createUserContent } from "@google/genai";
+import { receiptPrompt } from "../utils/prompt";
+import { da } from "zod/v4/locales/index.cjs";
+import { error } from "console";
 
 export const createTransactionService = async (
 	body: CreateTransactionType,
@@ -194,5 +200,67 @@ export const bulkTransactionService = async (userId: string, transactions: Creat
         }
     } catch (error) {
         throw error
+    }
+}
+
+export const scanReceiptService = async (file: Express.Multer.File | undefined) => {
+    if (!file) throw new BadRequestException('No file uploaded');
+
+    try {
+        if (!file.path) throw new BadRequestException('Failed to upload file');
+        console.log(file.path);
+
+        const responseData = await axios.get(file.path, {
+            responseType: 'arraybuffer'
+        });
+        const base64string = Buffer.from(responseData.data).toString('base64');
+
+        if (!base64string) throw new BadRequestException('Could not process file');
+
+        const result = await genAI.models.generateContent({
+            model: genAIModel,
+            contents: [
+                createUserContent([
+                    receiptPrompt,
+                    createPartFromBase64(base64string, file.mimetype)
+                ])
+            ],
+            config: {
+                temperature: 0,
+                topP: 1,
+                responseMimeType: 'application/json'
+            }
+        });
+
+        const response = result.text;
+        const cleanedText = response?.replace(/```(?:json)?\n?/g, "").trim()
+
+        if (!cleanedText) {
+            return {
+                error: 'Could not read receipt content'
+            }
+        }
+
+        const data = JSON.parse(cleanedText);
+        if (!data.amount || !data.date) {
+            return {
+                error: "Receipt missing required information"
+            }
+        }
+
+        return {
+            title: data.title || "Receipt",
+            amount: data.amount,
+            date: data.date,
+            description: data.description,
+            category: data.category,
+            paymentMethod: data.paymentMethod,
+            type: data.type,
+            receiptUrl: file.path
+        }
+    } catch (error) {
+        return {
+            error: 'Receipt scanning service unavailable'
+        }
     }
 }
