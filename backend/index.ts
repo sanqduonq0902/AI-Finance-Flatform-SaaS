@@ -12,6 +12,7 @@ import passport from 'passport';
 import './interface/user.interface';
 import './config/passport.config';
 import { passportAuthJwt } from './config/passport.config';
+import { initializeCrons } from './crons';
 
 const app = express();
 const BASE_PATH = Env.BASE_PATH;
@@ -41,7 +42,10 @@ app.use(`${BASE_PATH}/transaction`, passportAuthJwt, transactionRoutes);
 app.use(errorHandler);
 
 app.listen(Env.PORT, async () => {
-    await connectMongoDB(),
+    await connectMongoDB();
+    if (Env.NODE_ENV === 'development') {
+        await initializeCrons();
+    }
     console.log(`App started at http://localhost:${Env.PORT}`);
 });
 
