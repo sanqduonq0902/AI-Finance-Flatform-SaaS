@@ -8,6 +8,7 @@ import connectMongoDB from './config/database.config';
 import authRoutes from './routes/auth.router';
 import userRoutes from './routes/user.router';
 import transactionRoutes from './routes/transaction.router';
+import reportRoutes from './routes/report.router';
 import passport from 'passport';
 import './interface/user.interface';
 import './config/passport.config';
@@ -38,6 +39,8 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
 app.use(`${BASE_PATH}/auth`, authRoutes);
 app.use(`${BASE_PATH}/user`, passportAuthJwt, userRoutes);
 app.use(`${BASE_PATH}/transaction`, passportAuthJwt, transactionRoutes);
+app.use(`${BASE_PATH}/report`, passportAuthJwt, reportRoutes);
+
 
 app.use(errorHandler);
 
